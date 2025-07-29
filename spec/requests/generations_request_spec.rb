@@ -1,8 +1,18 @@
 require 'rails_helper'
 
 RSpec.describe 'Generations', type: :request do
+  let(:organization) { create(:organization) }
+  let(:user) { create(:user, organization: organization) }
+  let(:generator) { create(:generator, organization: organization) }
+
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+  }
+  let(:user_header) {
+    { 'X-Api-Key' => user.api_key }
+  }
+  let(:headers) {
+    json_headers.merge(user_header)
   }
 
   def generation_json(generation)
@@ -16,9 +26,17 @@ RSpec.describe 'Generations', type: :request do
   end
 
   context 'index' do
-    let!(:generation) { create(:generation) }
+    let!(:generation) { create(:generation, generator: generator) }
+
+    before do
+      get '/generations', headers: headers
+    end
+
+    it 'has a 200 status' do
+      expect(response.status).to eq(200)
+    end
+
     it 'returns generations' do
-      get '/generations', headers: json_headers
       json = JSON.parse(response.body)
       expect(json).to eq(
         {
@@ -29,9 +47,9 @@ RSpec.describe 'Generations', type: :request do
   end
 
   context 'show' do
-    let!(:generation) { create(:generation) }
+    let!(:generation) { create(:generation, generator: generator) }
     it 'returns a generation' do
-      get "/generations/#{generation.id}", headers: json_headers
+      get "/generations/#{generation.id}", headers: headers
       json = JSON.parse(response.body)
       expect(json).to eq(generation_json(generation))
     end
@@ -42,12 +60,13 @@ RSpec.describe 'Generations', type: :request do
       {
         'start_date'  => Date.new(2025, 2, 1),
         'end_date' => Date.new(2025, 2, 28),
-        'quantity' => 80
+        'quantity' => 80,
+        'generator_id' => generator.id
       }
     }
 
     before do
-      post '/generations', headers: json_headers, params: body.to_json
+      post '/generations', headers: headers, params: body.to_json
     end
 
     it 'creates a generation' do
@@ -61,7 +80,7 @@ RSpec.describe 'Generations', type: :request do
     it 'creates the generation with the correct data' do
       json = JSON.parse(response.body)
       generation = Generation.find(json['id'])
-      attrs = generation.attributes.slice(*%w(start_date end_date quantity))
+      attrs = generation.attributes.slice(*%w(start_date end_date quantity generator_id))
       expect(attrs).to eq(body)
     end
 

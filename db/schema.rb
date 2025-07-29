@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_24_222743) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_29_165836) do
   create_table "accounts", force: :cascade do |t|
     t.string "name"
     t.integer "organization_id"
@@ -42,6 +42,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_24_222743) do
   create_table "generators", force: :cascade do |t|
     t.string "name"
     t.string "ext_id"
+    t.integer "organization_id"
+    t.index ["organization_id"], name: "index_generators_on_organization_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -56,7 +58,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_24_222743) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "api_key"
+    t.integer "organization_id"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["organization_id"], name: "index_users_on_organization_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 end
