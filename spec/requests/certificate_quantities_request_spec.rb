@@ -1,8 +1,26 @@
 require 'rails_helper'
 
 RSpec.describe 'CertificateQuantities', type: :request do
+  let(:organization) { create(:organization) }
+  let(:other_organization) { create(:organization) }
+  let(:account) { create(:account, organization: organization)}
+  let(:other_account) { create(:account, organization: other_organization)}
+  let(:user) { create(:user, organization: organization) }
+  let(:generator) { create(:generator, organization: organization) }
+  let(:other_generator) { create(:generator, organization: other_organization) }
+  let(:certificate) { create(:certificate, generator: generator) }
+  let(:other_certificate) { create(:certificate, generator: other_generator) }
+  let(:certificate_quantity) { create(:certificate_quantity, certificate: certificate) }
+  let(:other_certificate_quantity) { create(:certificate_quantity, certificate: other_certificate) }
+
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+  }
+  let(:user_header) {
+    { 'X-Api-Key' => user.api_key }
+  }
+  let(:headers) {
+    json_headers.merge(user_header)
   }
 
   def certificate_quantity_json(certificate_quantity)
@@ -15,9 +33,18 @@ RSpec.describe 'CertificateQuantities', type: :request do
   end
 
   context 'index' do
-    let!(:certificate_quantity) { create(:certificate_quantity) }
+    let!(:certificate_quantity) { create(:certificate_quantity, certificate: certificate, account: account) }
+    let!(:other_certificate_quantity) { create(:certificate_quantity, certificate: other_certificate, account: other_account) }
+
+    before do
+      get '/certificate_quantities', headers: headers
+    end
+
+    it 'has a 200 status' do
+      expect(response.status).to eq(200)
+    end
+
     it 'returns certificate quantities' do
-      get '/certificate_quantities', headers: json_headers
       json = JSON.parse(response.body)
       expect(json).to eq(
         {
@@ -28,47 +55,21 @@ RSpec.describe 'CertificateQuantities', type: :request do
   end
 
   context 'show' do
-    let!(:certificate_quantity) { create(:certificate_quantity) }
-    it 'returns a certificate quantity' do
-      get "/certificate_quantities/#{certificate_quantity.id}", headers: json_headers
-      json = JSON.parse(response.body)
-      expect(json).to eq(certificate_quantity_json(certificate_quantity))
+    context "when accessing certificate quantity that is associated with user's organization" do
+      let!(:certificate_quantity) { create(:certificate_quantity, certificate: certificate, account: account) }
+      it 'returns a certificate quantity' do
+        get "/certificate_quantities/#{certificate_quantity.id}", headers: headers
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity))
+      end
+    end
+
+    context "when accessing certificate quantity that is not associated with user's organization" do
+      let!(:certificate_quantity) { create(:certificate_quantity, certificate: other_certificate, account: other_account) }
+      it 'returns an unauthorized status' do
+        get "/certificate_quantities/#{certificate_quantity.id}", headers: headers
+        expect(response.code).to eq('401')
+      end
     end
   end
-
-  context 'create' do
-    let(:certificate) { create(:certificate) }
-    let(:body) {
-      {
-        'sn_start' => 1000,
-        'quantity' => 50,
-        'certificate_id' => certificate.id
-      }
-    }
-
-    before do
-      post '/certificate_quantities', headers: json_headers, params: body.to_json
-    end
-
-    it 'creates a certificate quantity' do
-      expect(CertificateQuantity.count).to eq(1)
-    end
-
-    it 'has the correct status' do
-      expect(response.status).to eq(201)
-    end
-
-    it 'creates the certificate quantity with the correct data' do
-      json = JSON.parse(response.body)
-      certificate_quantity = CertificateQuantity.find(json['id'])
-      attrs = certificate_quantity.attributes.slice(*%w(sn_start quantity certificate_id))
-      expect(attrs).to eq(body)
-    end
-
-    it 'returns the body with the correct body' do
-      json = JSON.parse(response.body)
-      certificate_quantity = CertificateQuantity.find(json['id'])
-      expect(json).to eq(certificate_quantity_json(certificate_quantity))
-    end
-  end
-end 
+end

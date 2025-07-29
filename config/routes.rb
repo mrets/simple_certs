@@ -4,6 +4,6 @@ Rails.application.routes.draw do
   resources :generations, only: [:index, :show, :create]
   resources :accounts, only: [:index, :show, :create]
   resources :generators, only: [:index, :show, :create]
-  resources :certificate_quantities, only: [:index, :show, :create]
+  resources :certificate_quantities, only: [:index, :show]
   resources :certificates, only: [:index, :show, :create]
 end
