@@ -1,8 +1,20 @@
 require 'rails_helper'
 
 RSpec.describe 'Accounts', type: :request do
+  let(:organization) { create(:organization) }
+  let(:other_organization) { create(:organization) }
+  let(:user) { create(:user, organization: organization) }
+  let(:account) { create(:account, organization: organization) }
+  let(:other_account) { create(:account, organization: other_organization) }
+
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+  }
+  let(:user_header) {
+    { 'X-Api-Key' => user.api_key }
+  }
+  let(:headers) {
+    json_headers.merge(user_header)
   }
 
   def account_json(account)
@@ -14,9 +26,18 @@ RSpec.describe 'Accounts', type: :request do
   end
 
   context 'index' do
-    let!(:account) { create(:account) }
+    let!(:account) { create(:account, organization: organization) }
+    let!(:other_account) { create(:account, organization: other_organization) }
+
+    before do
+      get '/accounts', headers: headers
+    end
+
+    it 'has a 200 status' do
+      expect(response.status).to eq(200)
+    end
+
     it 'returns accounts' do
-      get '/accounts', headers: json_headers
       json = JSON.parse(response.body)
       expect(json).to eq(
         {
@@ -27,16 +48,25 @@ RSpec.describe 'Accounts', type: :request do
   end
 
   context 'show' do
-    let!(:account) { create(:account) }
-    it 'returns an account' do
-      get "/accounts/#{account.id}", headers: json_headers
-      json = JSON.parse(response.body)
-      expect(json).to eq(account_json(account))
+    context "when accessing account that is associated with user's organization" do
+      let!(:account) { create(:account, organization: organization) }
+      it 'returns an account' do
+        get "/accounts/#{account.id}", headers: headers
+        json = JSON.parse(response.body)
+        expect(json).to eq(account_json(account))
+      end
+    end
+
+    context "when accessing account that is not associated with user's organization" do
+      let!(:account) { create(:account, organization: other_organization) }
+      it 'returns an unauthorized status' do
+        get "/accounts/#{account.id}", headers: headers
+        expect(response.code).to eq('401')
+      end
     end
   end
 
   context 'create' do
-    let(:organization) { create(:organization) }
     let(:body) {
       {
         'name' => 'Test Account',
@@ -45,28 +75,43 @@ RSpec.describe 'Accounts', type: :request do
     }
 
     before do
-      post '/accounts', headers: json_headers, params: body.to_json
+      post '/accounts', headers: headers, params: body.to_json
     end
 
-    it 'creates an account' do
-      expect(Account.count).to eq(1)
+    context "when creating account that is associated with the user's organization" do
+      it 'creates an account' do
+        expect(Account.count).to eq(1)
+      end
+
+      it 'has the correct status' do
+        expect(response.status).to eq(201)
+      end
+
+      it 'creates the account with the correct data' do
+        json = JSON.parse(response.body)
+        account = Account.find(json['id'])
+        attrs = account.attributes.slice(*%w(name organization_id))
+        expect(attrs).to eq(body)
+      end
+
+      it 'returns the body with the correct body' do
+        json = JSON.parse(response.body)
+        account = Account.find(json['id'])
+        expect(json).to eq(account_json(account))
+      end
     end
 
-    it 'has the correct status' do
-      expect(response.status).to eq(201)
-    end
+    context "when creating account that is NOT associated with the user's organization" do
+      let(:body) {
+        {
+          'name' => 'Test Account',
+          'organization_id' => other_organization.id
+        }
+      }
 
-    it 'creates the account with the correct data' do
-      json = JSON.parse(response.body)
-      account = Account.find(json['id'])
-      attrs = account.attributes.slice(*%w(name organization_id))
-      expect(attrs).to eq(body)
-    end
-
-    it 'returns the body with the correct body' do
-      json = JSON.parse(response.body)
-      account = Account.find(json['id'])
-      expect(json).to eq(account_json(account))
+      it 'returns an unauthorized status' do
+        expect(response.code).to eq('401')
+      end
     end
   end
 end 
