@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   resources :accounts, only: [:index, :show, :create]
   resources :generators, only: [:index, :show, :create]
   resources :certificate_quantities, only: [:index, :show, :create]
+  resources :certificates, only: [:index, :show, :create]
 
   # Defines the root path route ("/")
   # root "posts#index"
