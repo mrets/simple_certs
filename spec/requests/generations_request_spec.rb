@@ -2,8 +2,10 @@ require 'rails_helper'
 
 RSpec.describe 'Generations', type: :request do
   let(:organization) { create(:organization) }
+  let(:other_organization) { create(:organization) }
   let(:user) { create(:user, organization: organization) }
   let(:generator) { create(:generator, organization: organization) }
+  let(:other_generator) { create(:generator, organization: other_organization) }
 
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -27,6 +29,7 @@ RSpec.describe 'Generations', type: :request do
 
   context 'index' do
     let!(:generation) { create(:generation, generator: generator) }
+    let!(:other_generation) { create(:generation, generator: other_generator)}
 
     before do
       get '/generations', headers: headers
@@ -47,11 +50,21 @@ RSpec.describe 'Generations', type: :request do
   end
 
   context 'show' do
-    let!(:generation) { create(:generation, generator: generator) }
-    it 'returns a generation' do
-      get "/generations/#{generation.id}", headers: headers
-      json = JSON.parse(response.body)
-      expect(json).to eq(generation_json(generation))
+    context "when accessing generation that is associated with user's organization" do
+      let!(:generation) { create(:generation, generator: generator) }
+      it 'returns a generation' do
+        get "/generations/#{generation.id}", headers: headers
+        json = JSON.parse(response.body)
+        expect(json).to eq(generation_json(generation))
+      end
+    end
+
+    context "when accessing generation that is not associated with user's organization" do
+      let!(:generation) { create(:generation, generator: other_generator) }
+      it 'returns an unauthorized status' do
+        get "/generations/#{generation.id}", headers: headers
+        expect(response.code).to eq('401')
+      end
     end
   end
 
@@ -61,7 +74,7 @@ RSpec.describe 'Generations', type: :request do
         'start_date'  => Date.new(2025, 2, 1),
         'end_date' => Date.new(2025, 2, 28),
         'quantity' => 80,
-        'generator_id' => generator.id
+        'generator_id' => create_generator.id
       }
     }
 
@@ -69,25 +82,38 @@ RSpec.describe 'Generations', type: :request do
       post '/generations', headers: headers, params: body.to_json
     end
 
-    it 'creates a generation' do
-      expect(Generation.count).to eq(1)
+    context "when creating generation that is associated with a generator in the user's organization" do
+      let(:create_generator) { generator }
+
+      it 'creates a generation' do
+        expect(Generation.count).to eq(1)
+      end
+
+      it 'has the correct status' do
+        expect(response.status).to eq(201)
+      end
+
+      it 'creates the generation with the correct data' do
+        json = JSON.parse(response.body)
+        generation = Generation.find(json['id'])
+        attrs = generation.attributes.slice(*%w(start_date end_date quantity generator_id))
+        expect(attrs).to eq(body)
+      end
+
+      it 'returns the body with the correct body' do
+        json = JSON.parse(response.body)
+        generation = Generation.find(json['id'])
+        expect(json).to eq(generation_json(generation))
+      end
     end
 
-    it 'has the correct status' do
-      expect(response.status).to eq(201)
-    end
 
-    it 'creates the generation with the correct data' do
-      json = JSON.parse(response.body)
-      generation = Generation.find(json['id'])
-      attrs = generation.attributes.slice(*%w(start_date end_date quantity generator_id))
-      expect(attrs).to eq(body)
-    end
+    context "when creating generation that is NOT associated with a generator in the user's organization" do
+      let(:create_generator) { other_generator }
 
-    it 'returns the body with the correct body' do
-      json = JSON.parse(response.body)
-      generation = Generation.find(json['id'])
-      expect(json).to eq(generation_json(generation))
+      it 'returns and unauthorized status' do
+        expect(response.code).to eq('401')
+      end
     end
   end
 end
