@@ -8,8 +8,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
   let(:user) { create(:user, organization: organization) }
   let(:generator) { create(:generator, organization: organization) }
   let(:other_generator) { create(:generator, organization: other_organization) }
-  let(:certificate) { create(:certificate, generator: generator) }
-  let(:other_certificate) { create(:certificate, generator: other_generator) }
+  let(:generation) { create(:generation, generator: generator) }
+  let(:other_generation) { create(:generation, generator: other_generator) }
+  let(:certificate) { create(:certificate, generator: generator, generation: generation) }
+  let(:other_certificate) { create(:certificate, generator: other_generator, generation: other_generation) }
   let(:certificate_quantity) { create(:certificate_quantity, certificate: certificate) }
   let(:other_certificate_quantity) { create(:certificate_quantity, certificate: other_certificate) }
 
