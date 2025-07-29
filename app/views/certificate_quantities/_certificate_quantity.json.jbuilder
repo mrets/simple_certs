@@ -1,0 +1,4 @@
+json.id certificate_quantity.id
+json.sn_start certificate_quantity.sn_start
+json.quantity certificate_quantity.quantity
+json.certificate_id certificate_quantity.certificate_id 

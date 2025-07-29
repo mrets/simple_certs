@@ -1,0 +1,1 @@
+json.partial! 'generator', generator: @generator 

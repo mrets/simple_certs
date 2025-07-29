@@ -24,7 +24,7 @@ class AddBaseModels < ActiveRecord::Migration[8.0]
       t.references :certificate
     end
 
-    create_table :account do |t|
+    create_table :accounts do |t|
       t.string :name
       t.references :organization
     end

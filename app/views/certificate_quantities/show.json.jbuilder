@@ -1,0 +1,1 @@
+json.partial! 'certificate_quantity', certificate_quantity: @certificate_quantity 
