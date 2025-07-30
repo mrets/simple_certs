@@ -19,7 +19,6 @@ class AddBaseModels < ActiveRecord::Migration[8.0]
     end
 
     create_table :certificate_quantities do |t|
-      t.integer :sn_start
       t.integer :quantity
       t.references :certificate
     end

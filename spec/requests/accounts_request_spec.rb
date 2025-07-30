@@ -1,11 +1,12 @@
 require 'rails_helper'
+require 'ostruct'
 
 RSpec.describe 'Accounts', type: :request do
-  let(:organization) { create(:organization) }
-  let(:other_organization) { create(:organization) }
+  let!(:organization) { create(:organization) }
+  let!(:other_organization) { create(:organization) }
   let(:user) { create(:user, organization: organization) }
-  let(:account) { create(:account, organization: organization) }
-  let(:other_account) { create(:account, organization: other_organization) }
+  let(:account) { organization.default_account }
+  let(:other_account) { other_organization.default_account }
 
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -26,9 +27,6 @@ RSpec.describe 'Accounts', type: :request do
   end
 
   context 'index' do
-    let!(:account) { create(:account, organization: organization) }
-    let!(:other_account) { create(:account, organization: other_organization) }
-
     before do
       get '/accounts', headers: headers
     end
@@ -49,18 +47,16 @@ RSpec.describe 'Accounts', type: :request do
 
   context 'show' do
     context "when accessing account that is associated with user's organization" do
-      let!(:account) { create(:account, organization: organization) }
       it 'returns an account' do
-        get "/accounts/#{account.id}", headers: headers
+        get "/accounts/#{organization.default_account_id}", headers: headers
         json = JSON.parse(response.body)
         expect(json).to eq(account_json(account))
       end
     end
 
     context "when accessing account that is not associated with user's organization" do
-      let!(:account) { create(:account, organization: other_organization) }
       it 'returns an unauthorized status' do
-        get "/accounts/#{account.id}", headers: headers
+        get "/accounts/#{other_account.id}", headers: headers
         expect(response.code).to eq('401')
       end
     end
@@ -80,7 +76,7 @@ RSpec.describe 'Accounts', type: :request do
 
     context "when creating account that is associated with the user's organization" do
       it 'creates an account' do
-        expect(Account.count).to eq(1)
+        expect(Account.count).to eq(3)
       end
 
       it 'has the correct status' do

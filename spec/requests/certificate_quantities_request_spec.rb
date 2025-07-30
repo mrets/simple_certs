@@ -10,10 +10,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
   let(:other_generator) { create(:generator, organization: other_organization) }
   let(:generation) { create(:generation, generator: generator) }
   let(:other_generation) { create(:generation, generator: other_generator) }
-  let(:certificate) { create(:certificate, generator: generator, generation: generation) }
-  let(:other_certificate) { create(:certificate, generator: other_generator, generation: other_generation) }
-  let(:certificate_quantity) { create(:certificate_quantity, certificate: certificate) }
-  let(:other_certificate_quantity) { create(:certificate_quantity, certificate: other_certificate) }
+  let!(:certificate) { create(:certificate, generator: generator, generation: generation) }
+  let!(:other_certificate) { create(:certificate, generator: other_generator, generation: other_generation) }
+  let(:certificate_quantity) { certificate.reload.certificate_quantities.first }
+  let(:other_certificate_quantity) { other_certificate.reload.certificate_quantities.first }
 
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -28,16 +28,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
   def certificate_quantity_json(certificate_quantity)
     {
       'id' => certificate_quantity.id,
-      'sn_start' => certificate_quantity.sn_start,
       'quantity' => certificate_quantity.quantity,
       'certificate_id' => certificate_quantity.certificate_id,
     }
   end
 
   context 'index' do
-    let!(:certificate_quantity) { create(:certificate_quantity, certificate: certificate, account: account) }
-    let!(:other_certificate_quantity) { create(:certificate_quantity, certificate: other_certificate, account: other_account) }
-
     before do
       get '/certificate_quantities', headers: headers
     end

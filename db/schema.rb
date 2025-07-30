@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_29_203351) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_29_213152) do
   create_table "accounts", force: :cascade do |t|
     t.string "name"
     t.integer "organization_id"
@@ -18,7 +18,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_29_203351) do
   end
 
   create_table "certificate_quantities", force: :cascade do |t|
-    t.integer "sn_start"
     t.integer "quantity"
     t.integer "certificate_id"
     t.integer "account_id"
@@ -31,6 +30,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_29_203351) do
     t.integer "quantity"
     t.integer "generation_id"
     t.integer "generator_id"
+    t.date "vintage_date"
     t.index ["generation_id"], name: "index_certificates_on_generation_id"
     t.index ["generator_id"], name: "index_certificates_on_generator_id"
   end
@@ -52,20 +52,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_29_203351) do
 
   create_table "organizations", force: :cascade do |t|
     t.string "name"
+    t.integer "default_account_id"
+    t.index ["default_account_id"], name: "index_organizations_on_default_account_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email", default: "", null: false
-    t.string "encrypted_password", default: "", null: false
-    t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "api_key"
     t.integer "organization_id"
-    t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
-    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 end

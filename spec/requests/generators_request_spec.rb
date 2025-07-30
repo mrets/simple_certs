@@ -22,6 +22,7 @@ RSpec.describe 'Generators', type: :request do
       'id' => generator.id,
       'name' => generator.name,
       'ext_id' => generator.ext_id,
+      'organization_id' => generator.organization_id
     }
   end
 

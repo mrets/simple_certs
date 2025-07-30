@@ -1,5 +1,14 @@
 class Generation < ApplicationRecord
   belongs_to :generator
+  has_one :certificate
 
   scope :for_organization, ->(org) { joins(:generator).where(generators: { organization_id: org.id }) }
+
+  def issue_certificate
+    self.certificate = Certificate.new(
+      quantity: self.quantity,
+      generator: self.generator,
+      vintage_date: self.end_date.beginning_of_month
+    )
+  end
 end
