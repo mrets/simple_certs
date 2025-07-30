@@ -9,8 +9,7 @@ class Generation < ApplicationRecord
   def issue_certificate
     self.certificate = Certificate.new(
       quantity: self.quantity,
-      generator: self.generator,
-      vintage_date: self.end_date.beginning_of_month
+      generator: self.generator
     )
   end
 end

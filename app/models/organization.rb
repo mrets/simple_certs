@@ -9,5 +9,6 @@ class Organization < ApplicationRecord
 
   def create_default_account
     self.default_account = Account.create(name: 'default', organization: self)
+    save
   end
 end
