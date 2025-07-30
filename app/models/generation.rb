@@ -4,6 +4,8 @@ class Generation < ApplicationRecord
 
   scope :for_organization, ->(org) { joins(:generator).where(generators: { organization_id: org.id }) }
 
+  after_create :issue_certificate
+
   def issue_certificate
     self.certificate = Certificate.new(
       quantity: self.quantity,

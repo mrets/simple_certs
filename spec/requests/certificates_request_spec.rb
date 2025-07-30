@@ -6,10 +6,10 @@ RSpec.describe 'Certificates', type: :request do
   let(:user) { create(:user, organization: organization) }
   let(:generator) { create(:generator, organization: organization) }
   let(:other_generator) { create(:generator, organization: other_organization) }
-  let(:generation) { create(:generation, generator: generator) }
-  let(:other_generation) { create(:generation, generator: other_generator) }
-  let(:certificate) { create(:certificate, generator: generator) }
-  let(:other_certificate) { create(:certificate, generator: other_generator) }
+  let!(:generation) { create(:generation, generator: generator) }
+  let!(:other_generation) { create(:generation, generator: other_generator) }
+  let(:certificate) { generation.certificate }
+  let(:other_certificate) { other_generation.certificate }
 
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -32,9 +32,6 @@ RSpec.describe 'Certificates', type: :request do
   end
 
   context 'index' do
-    let!(:certificate) { create(:certificate, generator: generator, generation: generation) }
-    let!(:other_certificate) { create(:certificate, generator: other_generator, generation: other_generation) }
-
     before do
       get '/certificates', headers: headers
     end

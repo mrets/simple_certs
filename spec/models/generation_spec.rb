@@ -2,11 +2,9 @@ require 'rails_helper'
 
 describe Generation do
   subject { create(:generation, quantity: 5, certificate: nil) }
-  describe '#issue_certificate' do
-    before do
-      subject.issue_certificate
-    end
 
+  # issue_certificate is called after_create
+  describe '#issue_certificate' do
     let(:certificate) { subject.certificate }
 
     it 'creates a certificate with the same quantity as the generation' do
