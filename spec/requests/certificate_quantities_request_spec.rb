@@ -4,6 +4,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
   let(:organization) { create(:organization) }
   let(:other_organization) { create(:organization) }
   let(:account) { organization.default_account }
+  let(:other_account) { other_organization.default_account }
   let(:account2) { create(:account, organization: organization)}
   let(:other_account2) { create(:account, organization: other_organization)}
   let(:user) { create(:user, organization: organization) }
@@ -143,6 +144,28 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
       it 'modifies the to_organization' do
         expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+    end
+
+    context "when passing invalid parameters" do
+      it "returns an unprocessable_entity status when an account_id and organization_id are both passed in" do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=1&organization_id=2", headers: headers
+        expect(response.code).to eq('422')
+      end
+
+      it "returns an unprocessable_entity status when the account is not the user's organization's account" do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=#{other_account.id}", headers: headers
+        expect(response.code).to eq('422')
+      end
+
+      it "returns an unprocessable_entity status when the organization_id is the user's organization ID" do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?organization_id=#{user.organization.id}", headers: headers
+        expect(response.code).to eq('422')
+      end
+
+      it "returns an unprocessable_entity status when the organization_id is a valid organization ID" do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?organization_id=1000", headers: headers
+        expect(response.code).to eq('422')
       end
     end
 
@@ -304,21 +327,21 @@ RSpec.describe 'CertificateQuantities', type: :request do
     end
 
     context "when splitting a certificate with an non-numeric quantity" do
-      it 'returns a 422 status' do
+      it 'returns a unprocessable_entity status' do
         put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=abc", headers: headers
         expect(response.code).to eq('422')
       end
     end
 
     context "when splitting a certificate with an a too large quantity" do
-      it 'returns a 422 status' do
+      it 'returns a unprocessable_entity status' do
         put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=1000", headers: headers
         expect(response.code).to eq('422')
       end
     end
 
     context "when splitting a certificate with an a exact same quantity" do
-      it 'returns a 422 status' do
+      it 'returns a unprocessable_entity status' do
         put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=100", headers: headers
         expect(response.code).to eq('422')
       end

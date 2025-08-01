@@ -28,6 +28,25 @@ class CertificateQuantitiesController < ApplicationController
 
     account_id = params[:account_id]
     organization_id = params[:organization_id]
+
+    if account_id && organization_id
+      return head :unprocessable_entity
+    end
+
+    if account_id
+      account = Account.find_by(id: account_id)
+      if account.organization != current_user.organization
+        return head :unprocessable_entity
+      end
+    end
+
+    if organization_id
+      organization = Organization.find_by(id: organization_id)
+      if !organization || organization == current_user.organization
+        return head :unprocessable_entity
+      end
+    end
+
     if account_id
       account = Account.find(account_id)
       @certificate_quantity.update(account: account)
