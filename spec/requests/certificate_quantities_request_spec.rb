@@ -278,7 +278,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
   context 'split' do
     context "when splitting a certificate that is associated with the user's organization" do
       before do
-        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=2", headers: headers
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=99", headers: headers
       end
 
       it 'returns a 200 status' do
@@ -291,15 +291,36 @@ RSpec.describe 'CertificateQuantities', type: :request do
       end
 
       it 'modifies the certificate account to change to passed in account' do
-        expect(certificate_quantity.reload.quantity).to eq(2)
+        expect(certificate_quantity.reload.quantity).to eq(99)
       end
 
       it 'creates a new certificate with the left over quantity' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([2,98])
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([1,99])
       end
 
       it 'creates a new certificate with the same account' do
         expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([account,account])
+      end
+    end
+
+    context "when splitting a certificate with an non-numeric quantity" do
+      it 'returns a 422 status' do
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=abc", headers: headers
+        expect(response.code).to eq('422')
+      end
+    end
+
+    context "when splitting a certificate with an a too large quantity" do
+      it 'returns a 422 status' do
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=1000", headers: headers
+        expect(response.code).to eq('422')
+      end
+    end
+
+    context "when splitting a certificate with an a exact same quantity" do
+      it 'returns a 422 status' do
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=100", headers: headers
+        expect(response.code).to eq('422')
       end
     end
 

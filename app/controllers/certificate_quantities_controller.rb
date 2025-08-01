@@ -61,6 +61,17 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
+    quantity = params[:quantity]
+    unless /^\d+$/.match(quantity)
+      return head :unprocessable_entity
+    end
+
+    quantity = quantity.to_i
+    if quantity >= @certificate_quantity.quantity
+      return head :unprocessable_entity
+    end
+
+
     @certificate_quantity.split(params[:quantity].to_i)
 
     @certificate_quantity.reload
