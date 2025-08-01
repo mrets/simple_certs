@@ -1,3 +1,4 @@
 json.id certificate_quantity.id
 json.quantity certificate_quantity.quantity
-json.certificate_id certificate_quantity.certificate_id 
+json.certificate_id certificate_quantity.certificate_id
+json.status certificate_quantity.status

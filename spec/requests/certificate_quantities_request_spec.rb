@@ -30,6 +30,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
       'id' => certificate_quantity.id,
       'quantity' => certificate_quantity.quantity,
       'certificate_id' => certificate_quantity.certificate_id,
+      'status' => certificate_quantity.status
     }
   end
 
@@ -54,7 +55,6 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
   context 'show' do
     context "when accessing certificate quantity that is associated with user's organization" do
-      let!(:certificate_quantity) { create(:certificate_quantity, certificate: certificate, account: account) }
       it 'returns a certificate quantity' do
         get "/certificate_quantities/#{certificate_quantity.id}", headers: headers
         json = JSON.parse(response.body)
@@ -63,9 +63,36 @@ RSpec.describe 'CertificateQuantities', type: :request do
     end
 
     context "when accessing certificate quantity that is not associated with user's organization" do
-      let!(:certificate_quantity) { create(:certificate_quantity, certificate: other_certificate, account: other_account) }
       it 'returns an unauthorized status' do
-        get "/certificate_quantities/#{certificate_quantity.id}", headers: headers
+        get "/certificate_quantities/#{other_certificate_quantity.id}", headers: headers
+        expect(response.code).to eq('401')
+      end
+    end
+  end
+
+  context 'retire' do
+    context "when retiring a certificate that is associated with the user's organization" do
+      before do
+        put "/certificate_quantities/#{certificate_quantity.id}/retire", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'modifies the certificate status to retired' do
+        expect(certificate_quantity.reload.status).to eq('retired')
+      end
+    end
+
+    context "when retiring a certificate that is not associated with the user's organization" do
+      it 'returns an unauthorized status' do
+        put "/certificate_quantities/#{other_certificate_quantity.id}/retire", headers: headers
         expect(response.code).to eq('401')
       end
     end

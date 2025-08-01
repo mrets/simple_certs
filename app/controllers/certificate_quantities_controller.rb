@@ -12,4 +12,13 @@ class CertificateQuantitiesController < ApplicationController
 
     render 'show'
   end
+
+  def retire
+    @certificate_quantity = CertificateQuantity.find(params[:id])
+    authorize @certificate_quantity
+
+    @certificate_quantity.update(status: 'retired')
+
+    render 'show'
+  end
 end

@@ -16,6 +16,10 @@ class CertificateQuantityPolicy < ApplicationPolicy
     certificate_quantity_owned_by?
   end
 
+  def retire?
+    certificate_quantity_owned_by?
+  end
+
   def certificate_quantity_owned_by?
     @record.certificate.generator.organization_id == @user.organization_id
   end

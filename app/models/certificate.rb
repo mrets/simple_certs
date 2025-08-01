@@ -19,7 +19,8 @@ class Certificate < ApplicationRecord
   def create_certificate_quantity
     self.certificate_quantities << CertificateQuantity.new(
       quantity: quantity,
-      account: generator.organization.default_account
+      account: generator.organization.default_account,
+      status: 'active'
     )
   end
 end
