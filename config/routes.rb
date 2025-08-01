@@ -7,7 +7,11 @@ Rails.application.routes.draw do
   resources :certificates, only: [:index, :show]
   resources :certificate_quantities, only: [:index, :show] do
     member do
-      put :certificates, :retire
+      put :retire
+      put :transfer
+      put :cancel_transfer
+      put :accept_transfer
+      put :split
     end
   end
 end

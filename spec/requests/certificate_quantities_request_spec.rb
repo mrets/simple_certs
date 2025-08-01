@@ -3,9 +3,11 @@ require 'rails_helper'
 RSpec.describe 'CertificateQuantities', type: :request do
   let(:organization) { create(:organization) }
   let(:other_organization) { create(:organization) }
-  let(:account) { create(:account, organization: organization)}
-  let(:other_account) { create(:account, organization: other_organization)}
+  let(:account) { organization.default_account }
+  let(:account2) { create(:account, organization: organization)}
+  let(:other_account2) { create(:account, organization: other_organization)}
   let(:user) { create(:user, organization: organization) }
+  let(:other_user) { create(:user, organization: other_organization)}
   let(:generator) { create(:generator, organization: organization) }
   let(:other_generator) { create(:generator, organization: other_organization) }
   let!(:generation) { create(:generation, generator: generator) }
@@ -14,6 +16,9 @@ RSpec.describe 'CertificateQuantities', type: :request do
   let(:other_certificate) { other_generation.certificate }
   let(:certificate_quantity) { certificate.reload.certificate_quantities.first }
   let(:other_certificate_quantity) { other_certificate.reload.certificate_quantities.first }
+  let(:generation_in_transit) { create(:generation, generator: other_generator) }
+  let(:certificate_in_transit) { generation_in_transit.certificate }
+  let(:certificate_quantity_in_transit) { certificate_in_transit.certificate_quantities.first }
 
   let(:json_headers) {
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -36,6 +41,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
   context 'index' do
     before do
+      certificate_quantity_in_transit.update(status: 'intransit', to_organization: organization)
       get '/certificate_quantities', headers: headers
     end
 
@@ -45,11 +51,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
     it 'returns certificate quantities' do
       json = JSON.parse(response.body)
-      expect(json).to eq(
-        {
-          'certificate_quantities' => [ certificate_quantity_json(certificate_quantity) ]
-        }
-      )
+      expect(json['certificate_quantities']).to match_array([
+        certificate_quantity_json(certificate_quantity),
+        certificate_quantity_json(certificate_quantity_in_transit)
+      ])
     end
   end
 
@@ -93,6 +98,214 @@ RSpec.describe 'CertificateQuantities', type: :request do
     context "when retiring a certificate that is not associated with the user's organization" do
       it 'returns an unauthorized status' do
         put "/certificate_quantities/#{other_certificate_quantity.id}/retire", headers: headers
+        expect(response.code).to eq('401')
+      end
+    end
+  end
+
+  context 'transfer' do
+    context "when transferring a certificate to another account that is associated with the user's organization" do
+      before do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=#{account2.id}", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'modifies the certificate account to change to passed in account' do
+        expect(certificate_quantity.reload.account).to eq(account2)
+      end
+    end
+
+    context "when transferring a certificate to another organization that is associated with the user's organization" do
+      before do
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?organization_id=#{other_organization.id}", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'modifies the certificate status to intransit' do
+        expect(certificate_quantity.reload.status).to eq('intransit')
+      end
+
+      it 'modifies the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+    end
+
+    context "when transferring a certificate that is not associated with the user's organization" do
+      it 'returns an unauthorized status' do
+        put "/certificate_quantities/#{other_certificate_quantity.id}/transfer", headers: headers
+        expect(response.code).to eq('401')
+      end
+    end
+  end
+
+  context 'cancel_transfer' do
+    context "when cancelling a transfer that is associated with the user's organization" do
+      before do
+        put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'sets the status to active' do
+        expect(certificate_quantity.reload.status).to eq('active')
+      end
+
+      it 'clears out the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to be_nil
+      end
+    end
+
+    context "when canceling a transfer of a certificate to another organization that is associated with the user's organization" do
+      before do
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'returns the certificate status as active' do
+        expect(certificate_quantity.reload.status).to eq('active')
+      end
+
+      it 'resets the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to be_nil
+      end
+    end
+
+    context "when transferring a certificate that is not associated with the user's organization" do
+      before do
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        put "/certificate_quantities/#{other_certificate_quantity.id}/transfer", headers: headers
+      end
+
+      it 'returns an unauthorized status' do
+        expect(response.code).to eq('401')
+      end
+
+      it 'leaves the certificate status as intransit' do
+        expect(certificate_quantity.reload.status).to eq('intransit')
+      end
+
+      it 'leaves the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+    end
+  end
+
+  context 'accept_transfer' do
+    context "when accepting a transfer that is associated with the certificate quantity's to_organization" do
+      let(:user_header) {
+        { 'X-Api-Key' => other_user.api_key }
+      }
+
+      before do
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        put "/certificate_quantities/#{certificate_quantity.id}/accept_transfer", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'sets the status to active' do
+        expect(certificate_quantity.reload.status).to eq('active')
+      end
+
+      it 'clears out the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to be_nil
+      end
+
+      it 'sets the account to the organizations default account' do
+        expect(certificate_quantity.reload.account).to eq(other_organization.default_account)
+      end
+    end
+
+    context "when transferring a certificate that is not associated with the user's organization" do
+      before do
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        put "/certificate_quantities/#{other_certificate_quantity.id}/transfer", headers: headers
+      end
+
+      it 'returns an unauthorized status' do
+        expect(response.code).to eq('401')
+      end
+
+      it 'leaves the certificate status as intransit' do
+        expect(certificate_quantity.reload.status).to eq('intransit')
+      end
+
+      it 'leaves the to_organization' do
+        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+    end
+  end
+
+  context 'split' do
+    context "when splitting a certificate that is associated with the user's organization" do
+      before do
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=2", headers: headers
+      end
+
+      it 'returns a 200 status' do
+        expect(response.code).to eq('200')
+      end
+
+      it 'responds with the updated certificate status' do
+        json = JSON.parse(response.body)
+        expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
+      end
+
+      it 'modifies the certificate account to change to passed in account' do
+        expect(certificate_quantity.reload.quantity).to eq(2)
+      end
+
+      it 'creates a new certificate with the left over quantity' do
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([2,98])
+      end
+
+      it 'creates a new certificate with the same account' do
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([account,account])
+      end
+    end
+
+    context "when splitting a certificate that is not associated with the user's organization" do
+      it 'returns an unauthorized status' do
+        put "/certificate_quantities/#{other_certificate_quantity.id}/split?quantity=2", headers: headers
         expect(response.code).to eq('401')
       end
     end
