@@ -66,14 +66,15 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/generations",
+							"raw": "http://localhost:3000/generations/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
-								"generations"
+								"generations",
+								"1"
 							]
 						}
 					},
@@ -82,7 +83,7 @@
 				{
 					"name": "create",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Accept",
@@ -100,6 +101,15 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2025-02-01\",\n    \"end_date\": \"2025-02-01\",\n    \"quantity\": 100,\n    \"generator_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "http://localhost:3000/generations",
 							"protocol": "http",
@@ -193,7 +203,7 @@
 				{
 					"name": "create",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Accept",
@@ -211,16 +221,24 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Generator Two\",\n    \"ext_id\": \"GEN002\",\n    \"organization_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:3000/generators/1",
+							"raw": "http://localhost:3000/generators",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
-								"generators",
-								"1"
+								"generators"
 							]
 						}
 					},
@@ -377,6 +395,246 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "transfer-account",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/1/transfer?account_id=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"1",
+								"transfer"
+							],
+							"query": [
+								{
+									"key": "account_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "transfer-organization",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/1/transfer?account_id=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"1",
+								"transfer"
+							],
+							"query": [
+								{
+									"key": "account_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "accept_transfer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/3/accept_transfer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"3",
+								"accept_transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel_transfer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/1/cancel_transfer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"1",
+								"cancel_transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "split",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/1/split?quantity=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"1",
+								"split"
+							],
+							"query": [
+								{
+									"key": "quantity",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "retire",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/certificate_quantities/1/retire",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"certificate_quantities",
+								"1",
+								"retire"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -457,6 +715,55 @@
 				{
 					"name": "create",
 					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Api-Key",
+								"value": "abcd",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Account Two\",\n    \"organization_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/accounts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{
+					"name": "index",
+					"request": {
 						"method": "GET",
 						"header": [
 							{
@@ -476,15 +783,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/accounts/1",
+							"raw": "http://localhost:3000/organizations",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
-								"accounts",
-								"1"
+								"organizations"
 							]
 						}
 					},

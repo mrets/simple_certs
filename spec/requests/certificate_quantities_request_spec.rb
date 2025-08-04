@@ -32,12 +32,16 @@ RSpec.describe 'CertificateQuantities', type: :request do
   }
 
   def certificate_quantity_json(certificate_quantity)
-    {
+    json = {
       'id' => certificate_quantity.id,
       'quantity' => certificate_quantity.quantity,
       'certificate_id' => certificate_quantity.certificate_id,
-      'status' => certificate_quantity.status
+      'account_id' => certificate_quantity.account_id,
+      'status' => certificate_quantity.status,
+
     }
+    json.merge!({ 'to_organization_id' => certificate_quantity.to_organization_id }) if certificate_quantity.status == 'intransit'
+    json
   end
 
   context 'index' do
@@ -93,6 +97,14 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
       it 'modifies the certificate status to retired' do
         expect(certificate_quantity.reload.status).to eq('retired')
+      end
+    end
+
+    context "when retiring a certificate that is active" do
+      it 'returns an unprocessable entity status' do
+        certificate_quantity.update(status: 'retired')
+        put "/certificate_quantities/#{certificate_quantity.id}/retire", headers: headers
+        expect(response.code).to eq('422')
       end
     end
 
@@ -158,6 +170,18 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(response.code).to eq('422')
       end
 
+      it "returns an unprocessable_entity status when the certificate quantity is already retired" do
+        certificate_quantity.update(status: 'retired')
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=#{account2.id}", headers: headers
+        expect(response.code).to eq('422')
+      end
+
+      it "returns an unprocessable_entity status when the certificate quantity is already intransit" do
+        certificate_quantity.update(status: 'intransit')
+        put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=#{account2.id}", headers: headers
+        expect(response.code).to eq('422')
+      end
+
       it "returns an unprocessable_entity status when the organization_id is the user's organization ID" do
         put "/certificate_quantities/#{certificate_quantity.id}/transfer?organization_id=#{user.organization.id}", headers: headers
         expect(response.code).to eq('422')
@@ -180,6 +204,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
   context 'cancel_transfer' do
     context "when cancelling a transfer that is associated with the user's organization" do
       before do
+        certificate_quantity.update(status: 'intransit')
         put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
       end
 
@@ -198,6 +223,14 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
       it 'clears out the to_organization' do
         expect(certificate_quantity.reload.to_organization).to be_nil
+      end
+    end
+
+    context 'when the status is not intransit' do
+      it 'returns a unprocessable_entity status' do
+        certificate_quantity.update(status: 'active')
+        put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
+        expect(response.code).to eq('422')
       end
     end
 
@@ -278,6 +311,19 @@ RSpec.describe 'CertificateQuantities', type: :request do
       end
     end
 
+    context 'when the status is not intransit' do
+      let(:user_header) {
+        { 'X-Api-Key' => other_user.api_key }
+      }
+
+      it 'returns a unprocessable_entity status' do
+        certificate_quantity.update(status: 'active', to_organization: other_organization)
+        put "/certificate_quantities/#{certificate_quantity.id}/accept_transfer", headers: headers
+        expect(response.code).to eq('422')
+      end
+    end
+
+
     context "when transferring a certificate that is not associated with the user's organization" do
       before do
         certificate_quantity.update(status: 'intransit', to_organization: other_organization)
@@ -324,6 +370,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
       it 'creates a new certificate with the same account' do
         expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([account,account])
       end
+
+      it 'creates a new certificate with an active status' do
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:status)).to match_array(['active','active'])
+      end
     end
 
     context "when splitting a certificate with an non-numeric quantity" do
@@ -343,6 +393,22 @@ RSpec.describe 'CertificateQuantities', type: :request do
     context "when splitting a certificate with an a exact same quantity" do
       it 'returns a unprocessable_entity status' do
         put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=100", headers: headers
+        expect(response.code).to eq('422')
+      end
+    end
+
+    context "when splitting a certificate with a intransit status" do
+      it 'returns a unprocessable_entity status' do
+        certificate_quantity.update(status: 'intransit')
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=1", headers: headers
+        expect(response.code).to eq('422')
+      end
+    end
+
+    context "when splitting a certificate with a retired status" do
+      it 'returns a unprocessable_entity status' do
+        certificate_quantity.update(status: 'retired')
+        put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=1", headers: headers
         expect(response.code).to eq('422')
       end
     end

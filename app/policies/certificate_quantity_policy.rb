@@ -3,8 +3,8 @@ class CertificateQuantityPolicy < ApplicationPolicy
     def resolve
       return scope.none unless user
 
-      scope.joins(certificate: :generator)
-           .where(generators: { organization_id: user.organization_id }).or(
+      scope.joins(:account)
+           .where(accounts: { organization_id: user.organization_id }).or(
              scope.where(to_organization: user.organization_id)
       )
     end

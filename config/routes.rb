@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   resources :generations, only: [:index, :show, :create]
   resources :accounts, only: [:index, :show, :create]
+  resources :organizations, only: [:index]
   resources :generators, only: [:index, :show, :create]
   resources :certificates, only: [:index, :show]
   resources :certificate_quantities, only: [:index, :show] do

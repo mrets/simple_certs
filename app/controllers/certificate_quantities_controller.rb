@@ -17,7 +17,11 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    @certificate_quantity.update(status: 'retired')
+    unless @certificate_quantity.status == 'active'
+      return head :unprocessable_entity
+    end
+
+    @certificate_quantity.retire
 
     render 'show'
   end
@@ -34,8 +38,12 @@ class CertificateQuantitiesController < ApplicationController
     end
 
     if account_id
+      if @certificate_quantity.status != 'active'
+        return head :unprocessable_entity
+      end
+
       account = Account.find_by(id: account_id)
-      if account.organization != current_user.organization
+      if !account || account.organization != current_user.organization
         return head :unprocessable_entity
       end
     end
@@ -62,6 +70,10 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
+    unless @certificate_quantity.status == 'intransit'
+      return head :unprocessable_entity
+    end
+
     @certificate_quantity.update(status: 'active', to_organization: nil)
 
     render 'show'
@@ -70,6 +82,10 @@ class CertificateQuantitiesController < ApplicationController
   def accept_transfer
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
+
+    unless @certificate_quantity.status == 'intransit'
+      return head :unprocessable_entity
+    end
 
     @certificate_quantity.update(status: 'active', to_organization: nil, account: current_user.organization.default_account)
 
@@ -80,6 +96,10 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
+    unless @certificate_quantity.status == 'active'
+      return head :unprocessable_entity
+    end
+
     quantity = params[:quantity]
     unless /^\d+$/.match(quantity)
       return head :unprocessable_entity
@@ -89,7 +109,6 @@ class CertificateQuantitiesController < ApplicationController
     if quantity >= @certificate_quantity.quantity
       return head :unprocessable_entity
     end
-
 
     @certificate_quantity.split(params[:quantity].to_i)
 
