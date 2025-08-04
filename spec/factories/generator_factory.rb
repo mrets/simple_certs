@@ -4,4 +4,4 @@ FactoryBot.define do
     ext_id { 'GEN001' }
     organization { create(:organization) }
   end
-end 
+end

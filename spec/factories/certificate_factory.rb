@@ -4,4 +4,4 @@ FactoryBot.define do
     quantity { 100 }
     generator { create(:generator) }
   end
-end 
+end

@@ -18,4 +18,4 @@ class AccountPolicy < ApplicationPolicy
   def account_owned_by?
     @record.organization_id == @user.organization_id
   end
-end 
+end

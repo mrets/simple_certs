@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe Generation do
-
   context 'when testing start and end dates' do
     subject { build(:generation, start_date: start_date, end_date: end_date) }
 

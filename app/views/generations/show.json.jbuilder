@@ -1,1 +1,1 @@
-json.partial! 'generation', generation: @generation
+json.partial! "generation", generation: @generation

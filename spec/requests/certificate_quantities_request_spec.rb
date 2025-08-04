@@ -5,10 +5,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
   let(:other_organization) { create(:organization) }
   let(:account) { organization.default_account }
   let(:other_account) { other_organization.default_account }
-  let(:account2) { create(:account, organization: organization)}
-  let(:other_account2) { create(:account, organization: other_organization)}
+  let(:account2) { create(:account, organization: organization) }
+  let(:other_account2) { create(:account, organization: other_organization) }
   let(:user) { create(:user, organization: organization) }
-  let(:other_user) { create(:user, organization: other_organization)}
+  let(:other_user) { create(:user, organization: other_organization) }
   let(:generator) { create(:generator, organization: organization) }
   let(:other_generator) { create(:generator, organization: other_organization) }
   let!(:generation) { create(:generation, generator: generator) }
@@ -37,7 +37,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
       'quantity' => certificate_quantity.quantity,
       'certificate_id' => certificate_quantity.certificate_id,
       'account_id' => certificate_quantity.account_id,
-      'status' => certificate_quantity.status,
+      'status' => certificate_quantity.status
 
     }
     json.merge!({ 'to_organization_id' => certificate_quantity.to_organization_id }) if certificate_quantity.status == 'intransit'
@@ -364,15 +364,15 @@ RSpec.describe 'CertificateQuantities', type: :request do
       end
 
       it 'creates a new certificate with the left over quantity' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([1,99])
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([ 1, 99 ])
       end
 
       it 'creates a new certificate with the same account' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([account,account])
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([ account, account ])
       end
 
       it 'creates a new certificate with an active status' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:status)).to match_array(['active','active'])
+        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:status)).to match_array([ 'active', 'active' ])
       end
     end
 

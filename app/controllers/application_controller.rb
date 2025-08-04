@@ -6,7 +6,7 @@ class ApplicationController < ActionController::API
   rescue_from Pundit::NotAuthorizedError, with: :unauthorized
 
   def verify_user
-    @current_user = User.find_by(api_key: request.headers['X-Api-Key'])
+    @current_user = User.find_by(api_key: request.headers["X-Api-Key"])
     return if @current_user
 
     unauthorized

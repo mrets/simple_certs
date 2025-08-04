@@ -19,4 +19,4 @@ class CertificatePolicy < ApplicationPolicy
   def certificate_owned_by?
     @record.generator.organization_id == @user.organization_id
   end
-end 
+end

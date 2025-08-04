@@ -3,4 +3,4 @@ FactoryBot.define do
     name { 'Test Account' }
     organization { create :organization }
   end
-end 
+end

@@ -20,7 +20,7 @@ class Certificate < ApplicationRecord
     self.certificate_quantities << CertificateQuantity.new(
       quantity: quantity,
       account: generator.organization.default_account,
-      status: 'active'
+      status: "active"
     )
   end
 end

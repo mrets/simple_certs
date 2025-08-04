@@ -92,7 +92,7 @@ RSpec.describe 'Generators', type: :request do
       it 'creates the generator with the correct data' do
         json = JSON.parse(response.body)
         generator = Generator.find(json['id'])
-        attrs = generator.attributes.slice(*%w(name ext_id organization_id))
+        attrs = generator.attributes.slice(*%w[name ext_id organization_id])
         expect(attrs).to eq(body)
       end
 
@@ -117,4 +117,4 @@ RSpec.describe 'Generators', type: :request do
       end
     end
   end
-end 
+end

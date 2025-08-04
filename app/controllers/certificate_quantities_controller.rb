@@ -1,29 +1,29 @@
-require 'ostruct'
+require "ostruct"
 
 class CertificateQuantitiesController < ApplicationController
   def index
     @certificate_quantities = CertificateQuantityPolicy::Scope.new(current_user, CertificateQuantity).resolve
-    render 'index'
+    render "index"
   end
 
   def show
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    render 'show'
+    render "show"
   end
 
   def retire
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    unless @certificate_quantity.status == 'active'
+    unless @certificate_quantity.status == "active"
       return head :unprocessable_entity
     end
 
     @certificate_quantity.retire
 
-    render 'show'
+    render "show"
   end
 
   def transfer
@@ -38,7 +38,7 @@ class CertificateQuantitiesController < ApplicationController
     end
 
     if account_id
-      if @certificate_quantity.status != 'active'
+      if @certificate_quantity.status != "active"
         return head :unprocessable_entity
       end
 
@@ -60,43 +60,43 @@ class CertificateQuantitiesController < ApplicationController
       @certificate_quantity.update(account: account)
     elsif organization_id
       organization = Organization.find(organization_id)
-      @certificate_quantity.update(status: 'intransit', to_organization: organization)
+      @certificate_quantity.update(status: "intransit", to_organization: organization)
     end
 
-    render 'show'
+    render "show"
   end
 
   def cancel_transfer
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    unless @certificate_quantity.status == 'intransit'
+    unless @certificate_quantity.status == "intransit"
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.update(status: 'active', to_organization: nil)
+    @certificate_quantity.update(status: "active", to_organization: nil)
 
-    render 'show'
+    render "show"
   end
 
   def accept_transfer
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    unless @certificate_quantity.status == 'intransit'
+    unless @certificate_quantity.status == "intransit"
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.update(status: 'active', to_organization: nil, account: current_user.organization.default_account)
+    @certificate_quantity.update(status: "active", to_organization: nil, account: current_user.organization.default_account)
 
-    render 'show'
+    render "show"
   end
 
   def split
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
-    unless @certificate_quantity.status == 'active'
+    unless @certificate_quantity.status == "active"
       return head :unprocessable_entity
     end
 
@@ -113,6 +113,6 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity.split(params[:quantity].to_i)
 
     @certificate_quantity.reload
-    render 'show'
+    render "show"
   end
 end

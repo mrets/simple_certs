@@ -45,4 +45,4 @@ class CertificateQuantityPolicy < ApplicationPolicy
   def certificate_quantity_owned_by?
     @record.certificate.generator.organization_id == @user.organization_id
   end
-end 
+end

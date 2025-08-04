@@ -1,1 +1,1 @@
-json.partial! 'generator', generator: @generator 
+json.partial! "generator", generator: @generator

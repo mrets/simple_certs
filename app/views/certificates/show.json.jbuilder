@@ -1,1 +1,1 @@
-json.partial! 'certificate', certificate: @certificate 
+json.partial! "certificate", certificate: @certificate

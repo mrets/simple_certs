@@ -23,13 +23,13 @@ RSpec.describe 'Generations', type: :request do
       'start_date' => generation.start_date&.iso8601,
       'end_date' => generation.end_date&.iso8601,
       'quantity' => generation.quantity,
-      'generator_id' => generation.generator_id,
+      'generator_id' => generation.generator_id
     }
   end
 
   context 'index' do
     let!(:generation) { create(:generation, generator: generator) }
-    let!(:other_generation) { create(:generation, generator: other_generator)}
+    let!(:other_generation) { create(:generation, generator: other_generator) }
 
     before do
       get '/generations', headers: headers
@@ -96,7 +96,7 @@ RSpec.describe 'Generations', type: :request do
       it 'creates the generation with the correct data' do
         json = JSON.parse(response.body)
         generation = Generation.find(json['id'])
-        attrs = generation.attributes.slice(*%w(start_date end_date quantity generator_id))
+        attrs = generation.attributes.slice(*%w[start_date end_date quantity generator_id])
         expect(attrs).to eq(body)
       end
 

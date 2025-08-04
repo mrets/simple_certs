@@ -1,16 +1,16 @@
-require 'ostruct'
+require "ostruct"
 
 class GeneratorsController < ApplicationController
   def index
     @generators = GeneratorPolicy::Scope.new(current_user, Generator).resolve
-    render 'index'
+    render "index"
   end
 
   def show
     @generator = Generator.find(params[:id])
     authorize @generator
 
-    render 'show'
+    render "show"
   end
 
   def create
@@ -18,10 +18,10 @@ class GeneratorsController < ApplicationController
     authorize @generator
 
     if @generator.save
-      render 'show', status: :created
+      render "show", status: :created
     else
       @errors = @generator.errors
-      render 'errors'
+      render "errors"
     end
   end
 

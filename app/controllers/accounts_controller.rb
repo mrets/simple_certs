@@ -1,16 +1,16 @@
-require 'ostruct'
+require "ostruct"
 
 class AccountsController < ApplicationController
   def index
     @accounts = AccountPolicy::Scope.new(current_user, Account).resolve
-    render 'index'
+    render "index"
   end
 
   def show
     @account = Account.find(params[:id])
     authorize @account
 
-    render 'show'
+    render "show"
   end
 
   def create
@@ -18,10 +18,10 @@ class AccountsController < ApplicationController
     authorize @account
 
     if @account.save
-      render 'show', status: :created
+      render "show", status: :created
     else
       @errors = @account.errors
-      render 'errors'
+      render "errors"
     end
   end
 

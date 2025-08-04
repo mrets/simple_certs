@@ -22,7 +22,7 @@ RSpec.describe 'Accounts', type: :request do
     {
       'id' => account.id,
       'name' => account.name,
-      'organization_id' => account.organization_id,
+      'organization_id' => account.organization_id
     }
   end
 
@@ -86,7 +86,7 @@ RSpec.describe 'Accounts', type: :request do
       it 'creates the account with the correct data' do
         json = JSON.parse(response.body)
         account = Account.find(json['id'])
-        attrs = account.attributes.slice(*%w(name organization_id))
+        attrs = account.attributes.slice(*%w[name organization_id])
         expect(attrs).to eq(body)
       end
 
@@ -110,4 +110,4 @@ RSpec.describe 'Accounts', type: :request do
       end
     end
   end
-end 
+end

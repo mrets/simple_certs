@@ -3,4 +3,4 @@ FactoryBot.define do
     quantity { 50 }
     certificate { create(:certificate) }
   end
-end 
+end

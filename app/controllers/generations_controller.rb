@@ -1,16 +1,16 @@
-require 'ostruct'
+require "ostruct"
 
 class GenerationsController < ApplicationController
   def index
     @generations = GenerationPolicy::Scope.new(current_user, Generation).resolve
-    render 'index'
+    render "index"
   end
 
   def show
     @generation = Generation.find(params[:id])
     authorize @generation
 
-    render 'show'
+    render "show"
   end
 
   def create
@@ -18,10 +18,10 @@ class GenerationsController < ApplicationController
     authorize @generation
 
     if @generation.save
-      render 'show', status: :created
+      render "show", status: :created
     else
       @errors = @generation.errors
-      render 'errors'
+      render "errors"
     end
   end
 

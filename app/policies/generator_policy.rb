@@ -18,4 +18,4 @@ class GeneratorPolicy < ApplicationPolicy
   def generator_owned_by?
     @record.organization_id == @user.organization_id
   end
-end 
+end
