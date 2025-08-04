@@ -108,42 +108,6 @@ Below are a set of examples for using the API:
 * hit Certificate Quantity / transfer endpoint with an organization_id parameter of 2
 * hit Certificate Quantity / cancel_transfer endpoint
 
-## Exercises
-
-Below are three exercises that detail changes to this system. **Pick one to work on** and devote about
-two hours to it. You can use any tools to work on it including LLMs. Be prepared to explain your 
-design decisions and implentation details. 
-
-### Exercise #1
-
-Add a transaction log to this system that tracks the movement and modifications of certificate 
-quantities so that there is enough information to recreate the certificate quantity's state
-given the system's intital state and the transaction log. Also make sure that all transactions to
-the system are performed serially in the face of concurent API requests.
-
-### Exercise #2
-
-Since integrity is such an important part of this system, here are a set of constraints that need to
-be true in this system:
-* generation dates must always be adjacent for a given generator, for example these generations are
-  valid:
-  * 2025/1/1 - 2025/1/31
-  * 2025/2/1 - 2025/2/28
-  * 2025/3/1 - 2025/3/31
-  * removing the middle generation would make these invalid
-* certificates can never be duplicated
-* certificate quantities quantities must sum up to the certificate that they are derived from
-
-Identify invariants that should always be true in the system and implement mechanisms to make sure that the system state is always correct. 
-
-### Exercise #3
-
-The design in the system currently is that each generator represents one fuel (wind or solar), but in the
-real world, some generators have one electric meter for combined wind / solar farm. When submitting 
-generation, it should generate one certificate/certificate quantity pair for each fuel. The user when
-submitting generation should also submit theh quantities for each fuel of the fuel mix to determine the
-quantities for the certificates created.
-
 ## Component versions
 
 This uses ruby 3.3.9 and rails 8.0.2. 

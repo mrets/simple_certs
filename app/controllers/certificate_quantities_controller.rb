@@ -101,7 +101,7 @@ class CertificateQuantitiesController < ApplicationController
     end
 
     quantity = params[:quantity]
-    unless /^\d+$/.match(quantity)
+    unless /^\d+$/.match(quantity.to_s)
       return head :unprocessable_entity
     end
 
