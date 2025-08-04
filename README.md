@@ -19,7 +19,7 @@ purchasing RECs in this market in the same amount as they consume. Our system al
 organization to proclaim that they run on 100% renweable energy if they purchase enough 
 RECs to cover their consumption. The process of claiming RECs to cover one's 
 usage is called retirement, which means to take REC's out of ciruculation so that no one else 
-can clamin them. The most important attribute of this system is its integrity. Just like a
+can claim them. The most important attribute of this system is its integrity. Just like a
 bank, we can't afford to lose RECs or let accounts become unbalanced. Production (reported
 generation) must match consumnption (retirements).
 
@@ -41,6 +41,41 @@ There are 7 models in this app:
 
 When a user posts generation that is valid, it creates a certificate of the same quantity and a certificate
 quantity of the same quantity as well into the organizations default account.
+
+## API Usage
+
+In this project is an export Postman collection. Once you have imported the Postman collection you can
+interact with the API. The current user is selected by the header value of 'X-Api-Key'. There are two users
+in the seeds each associated with an organization. All of the endpoints in the collection have the 'X-Api-Key' of
+'abcd', which selects user with ID=1 which is associated with organization with ID=1. The other user / organization 
+pair (ID=2) has an 'X-Api-Key' of 'xyz'. 
+
+Below are a set of examples for using the API:
+
+### View certificate quantities in your possesion
+
+* hit Certificate Quantities / index endpoint
+
+### Split a certificate quantity in preperation for a transfer
+
+* hit Certificate Quantities / split endpoint with a quantity for the split
+* hit Certificate Quantities / index endpoint to see the newly created split certificate quantity
+
+### Retire a certificate
+
+* hit Certificate Quantities / retire endpoint with one certificate
+
+### Transfer a certificate to another organization
+
+* hit Certificate Quantity / transfer endpoint with an organization_id parameter of 2
+* hit Certificate Quantity / accept_transfer endpoint with a 'X-Api-Key' header of 'xyz'
+* hit Certificate Quantity / index endpoint with a 'X-Api-Key' header of 'abcd' and 'xyz' 
+  see both organization's inventory (which should be changed).
+
+### Start a transfer a certificate and then cancel it
+
+* hit Certificate Quantity / transfer endpoint with an organization_id parameter of 2
+* hit Certificate Quantity / cancel_transfer endpoint
 
 ## Exercises
 
