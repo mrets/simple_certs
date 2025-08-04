@@ -42,6 +42,37 @@ There are 7 models in this app:
 When a user posts generation that is valid, it creates a certificate of the same quantity and a certificate
 quantity of the same quantity as well into the organizations default account.
 
+## API Overview
+
+Here are the following endpoints in the Postman collection
+
+* Generations
+  * Index
+  * Show
+  * Create
+* Generators
+  * Index
+  * Show
+  * Create
+* Certificates
+  * Index
+  * Show
+* Certificate Quantities
+  * Index
+  * Show
+  * Transfer to Account
+  * Transfer to Organization
+  * Accept Transfer
+  * Cancel Transfer
+  * Split
+  * Retire
+* Accounts
+  * Index
+  * Show
+  * Create
+* Organizations
+  * Index
+
 ## API Usage
 
 In this project is an export Postman collection. Once you have imported the Postman collection you can
