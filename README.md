@@ -1,6 +1,14 @@
 # README
 
-This application is a very simple app that implements a renewable energy certificate registry API.
+This application is a very simple app that implements a renewable energy certificate registry API. 
+
+Steps for working on this exercise:
+* Fork the repo into your own github account
+* Get the project set up by reading the bottom of this README
+* [Visit our exercise example doc](exercises.md)
+* Choose **only one** of the exercises to work on
+* Make any changes locally to your app and push it to your own forked copy of the repo and create a pull request against the main branch so we can see the diff.
+* Send us an email with a link to the PR before our panel interview and we'll talk through the experience in your interview
 
 ## Problem overview
 
