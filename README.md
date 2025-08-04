@@ -85,7 +85,8 @@ design decisions and implentation details.
 
 ### Exercise #1
 
-Add a transaction log to this system so that there is enought information to recreate the system's state
+Add a transaction log to this system that tracks the movement and modifications of certificate 
+quantities so that there is enough information to recreate the certificate quantity's state
 given the system's intital state and the transaction log. Also make sure that all transactions to
 the system are performed serially in the face of concurent API requests.
 
@@ -108,7 +109,9 @@ Identify invariants that should always be true in the system and implement mecha
 
 The design in the system currently is that each generator represents one fuel (wind or solar), but in the
 real world, some generators have one electric meter for combined wind / solar farm. When submitting 
-generation, 
+generation, it should generate one certificate/certificate quantity pair for each fuel. The user when
+submitting generation should also submit theh quantities for each fuel of the fuel mix to determine the
+quantities for the certificates created.
 
 ## Component versions
 
