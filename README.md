@@ -44,7 +44,7 @@ quantity of the same quantity as well into the organizations default account.
 
 ## Exercises
 
-Below are three exercises that detail changes to this system. Pick one to work on an devote about
+Below are three exercises that detail changes to this system. **Pick one to work on** and devote about
 two hours to it. You can use any tools to work on it including LLMs. Be prepared to explain your 
 design decisions and implentation details. 
 
@@ -67,8 +67,7 @@ be true in this system:
 * certificates can never be duplicated
 * certificate quantities quantities must sum up to the certificate that they are derived from
 
-identify invariants that should always be true
-in the system and implement mechanisms to make sure that the system state is always correct. 
+Identify invariants that should always be true in the system and implement mechanisms to make sure that the system state is always correct. 
 
 ### Exercise #3
 
@@ -82,7 +81,7 @@ This uses ruby 3.3.9 and rails 8.0.2.
 
 ### Installation
 
-Depending on your OS, you instructions will be different. Here is how to get it installed on MacOS
+Depending on your OS, you instructions will be different. We are using SQLite to simplify setup. Here is how to get the app installed on MacOS
 using RVM.
 
 ```
