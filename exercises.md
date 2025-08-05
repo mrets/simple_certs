@@ -55,26 +55,7 @@ Updated models/migrations/tests plus a short list of the invariants you implemen
 
 ---
 
-## Exercise 3 — Support Multi‑Fuel Generators (Design Extension)
-
-**Scenario**  
-A single generating station can be a hybrid (e.g., wind + solar). The current schema assumes one fuel per `Generator`.
-
-**Your Task**
-
-* Extend the data model so a generator can have multiple fuel types. Options:
-    * Introduce a `FuelType` join table.
-    * Treat a hybrid as multiple sub‑generators.
-* Define how `Generation` records capture each fuel’s MWh (separate rows vs. new columns).
-* Adjust certificate issuance so each fuel’s energy results in distinguishable certificates.
-* Ensure energy accounting still balances.
-
-**Deliverables**  
-Migrations, model changes, and example code or tests showing a hybrid generator issuing correct certificates, with an explanation of design choices and trade‑offs.
-
----
-
-## Exercise 4 — Background Job: Expire Stale Transfers
+## Exercise 3 — Background Job: Expire Stale Transfers
 
 **Scenario**  
 A `CertificateQuantity` moved to `"intransit"` waits on the recipient’s acceptance. It can currently linger forever.
