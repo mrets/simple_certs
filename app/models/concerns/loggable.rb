@@ -3,8 +3,8 @@ module Loggable
 
   included do
     after_create { log_transaction("create") }
-    after_create { log_transaction("update") }
-    after_create { log_transaction("destroy") }
+    after_update { log_transaction("update") }
+    after_destroy { log_transaction("destroy") }
   end
 
   private
@@ -12,9 +12,7 @@ module Loggable
       Transaction.create!(
         record_type: self.class.name,
         record_id: self.id,
-        event: event,
-        created_at: Time.current
+        event: event
       )
     end
-  end
 end

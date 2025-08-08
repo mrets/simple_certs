@@ -7,6 +7,8 @@ class Certificate < ApplicationRecord
   before_save :assign_serial_number
   after_create :create_certificate_quantity
 
+  include Loggable
+
   def assign_vintage_date
     self.vintage_date = generation.end_date.beginning_of_month
   end

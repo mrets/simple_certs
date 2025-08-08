@@ -14,6 +14,8 @@ class Generation < ApplicationRecord
   validate :start_date_is_not_in_the_future
   validate :end_date_is_not_in_the_future
 
+  include Loggable
+
   def issue_certificate
     self.certificate = Certificate.new(
       quantity: self.quantity,

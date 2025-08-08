@@ -1,3 +1,2 @@
-class TransactionLog < ApplicationRecord
-  serialize :changeset, JSON
+class Transaction < ApplicationRecord
 end

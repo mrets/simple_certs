@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_01_025252) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_08_135205) do
   create_table "accounts", force: :cascade do |t|
     t.string "name"
     t.integer "organization_id"
@@ -57,6 +57,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_025252) do
     t.string "name"
     t.integer "default_account_id"
     t.index ["default_account_id"], name: "index_organizations_on_default_account_id"
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.string "record_type", null: false
+    t.integer "record_id", null: false
+    t.string "event", null: false
+    t.text "changeset"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
