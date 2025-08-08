@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_01_025252) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_08_184306) do
   create_table "accounts", force: :cascade do |t|
     t.string "name"
     t.integer "organization_id"
@@ -59,6 +59,43 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_025252) do
     t.index ["default_account_id"], name: "index_organizations_on_default_account_id"
   end
 
+  create_table "transactions", force: :cascade do |t|
+    t.string "event_type", null: false
+    t.string "transaction_id", null: false
+    t.integer "user_id"
+    t.integer "organization_id"
+    t.integer "certificate_id"
+    t.integer "certificate_quantity_id"
+    t.integer "generation_id"
+    t.integer "account_id"
+    t.bigint "target_account_id"
+    t.bigint "target_organization_id"
+    t.bigint "new_certificate_quantity_id"
+    t.decimal "quantity_before"
+    t.decimal "quantity_after"
+    t.decimal "quantity_changed"
+    t.string "status_before"
+    t.string "status_after"
+    t.json "metadata"
+    t.text "error_message"
+    t.boolean "success", default: false, null: false
+    t.string "request_id"
+    t.string "ip_address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_transactions_on_account_id"
+    t.index ["certificate_id"], name: "index_transactions_on_certificate_id"
+    t.index ["certificate_quantity_id"], name: "index_transactions_on_certificate_quantity_id"
+    t.index ["created_at"], name: "index_transactions_on_created_at"
+    t.index ["event_type", "created_at"], name: "index_transactions_on_event_type_and_created_at"
+    t.index ["event_type"], name: "index_transactions_on_event_type"
+    t.index ["generation_id"], name: "index_transactions_on_generation_id"
+    t.index ["organization_id"], name: "index_transactions_on_organization_id"
+    t.index ["request_id"], name: "index_transactions_on_request_id"
+    t.index ["transaction_id"], name: "index_transactions_on_transaction_id", unique: true
+    t.index ["user_id"], name: "index_transactions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -66,4 +103,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_025252) do
     t.integer "organization_id"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
+
+  add_foreign_key "transactions", "accounts"
+  add_foreign_key "transactions", "accounts", column: "target_account_id"
+  add_foreign_key "transactions", "certificate_quantities"
+  add_foreign_key "transactions", "certificate_quantities", column: "new_certificate_quantity_id"
+  add_foreign_key "transactions", "certificates"
+  add_foreign_key "transactions", "generations"
+  add_foreign_key "transactions", "organizations"
+  add_foreign_key "transactions", "organizations", column: "target_organization_id"
+  add_foreign_key "transactions", "users"
 end
