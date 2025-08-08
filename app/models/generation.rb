@@ -1,4 +1,6 @@
 class Generation < ApplicationRecord
+  include Loggable
+
   belongs_to :generator
   has_one :certificate
 
@@ -13,8 +15,6 @@ class Generation < ApplicationRecord
   validate :start_date_is_less_than_end_date
   validate :start_date_is_not_in_the_future
   validate :end_date_is_not_in_the_future
-
-  include Loggable
 
   def issue_certificate
     self.certificate = Certificate.new(

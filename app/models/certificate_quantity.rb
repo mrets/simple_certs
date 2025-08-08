@@ -1,4 +1,6 @@
 class CertificateQuantity < ApplicationRecord
+  include Loggable
+
   belongs_to :certificate
   belongs_to :account
   belongs_to :to_organization, class_name: "Organization", foreign_key: "to_organization_id", optional: true

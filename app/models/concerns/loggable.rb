@@ -9,6 +9,9 @@ module Loggable
 
   private
     def log_transaction(event)
+      return if is_a?(Transaction)
+      puts "[LOGGABLE] #{event} on #{self.class.name} id=#{self.id}"
+
       Transaction.create!(
         record_type: self.class.name,
         record_id: self.id,
