@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe 'CertificateQuantities', type: :request do
+  include ActiveJob::TestHelper
   let(:organization) { create(:organization) }
   let(:other_organization) { create(:organization) }
   let(:account) { organization.default_account }
@@ -44,6 +45,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
     json
   end
 
+  after do
+    clear_enqueued_jobs
+  end 
+
   context 'index' do
     before do
       certificate_quantity_in_transit.update(status: 'intransit', to_organization: organization)
@@ -86,8 +91,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/retire", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -95,8 +100,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'modifies the certificate status to retired' do
-        expect(certificate_quantity.reload.status).to eq('retired')
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
+      end
+
+      it 'creates a transaction job to retire the certificate' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('retire')
       end
     end
 
@@ -122,8 +131,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/transfer?account_id=#{account2.id}", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -131,8 +140,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'modifies the certificate account to change to passed in account' do
-        expect(certificate_quantity.reload.account).to eq(account2)
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
+      end
+
+      it 'creates a transaction job to tranfer the certificate' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('transfer')
       end
     end
 
@@ -141,8 +154,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/transfer?organization_id=#{other_organization.id}", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -150,12 +163,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'modifies the certificate status to intransit' do
-        expect(certificate_quantity.reload.status).to eq('intransit')
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
       end
 
-      it 'modifies the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      it 'creates a transaction job to tranfer the certificate' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('transfer')
       end
     end
 
@@ -208,8 +221,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -217,12 +230,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'sets the status to active' do
-        expect(certificate_quantity.reload.status).to eq('active')
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
       end
 
-      it 'clears out the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to be_nil
+      it 'creates a transaction job to cancel the transfer' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('cancel_transfer')
       end
     end
 
@@ -240,8 +253,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -249,12 +262,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'returns the certificate status as active' do
-        expect(certificate_quantity.reload.status).to eq('active')
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
       end
 
-      it 'resets the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to be_nil
+      it 'creates a transaction job to cancel the transfer' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('cancel_transfer')
       end
     end
 
@@ -268,12 +281,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(response.code).to eq('401')
       end
 
-      it 'leaves the certificate status as intransit' do
-        expect(certificate_quantity.reload.status).to eq('intransit')
-      end
-
-      it 'leaves the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      it 'does not create a transaction job' do
+        expect(enqueued_jobs.size).to eq 0
       end
     end
   end
@@ -289,8 +298,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/accept_transfer", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -298,16 +307,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'sets the status to active' do
-        expect(certificate_quantity.reload.status).to eq('active')
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
       end
 
-      it 'clears out the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to be_nil
-      end
-
-      it 'sets the account to the organizations default account' do
-        expect(certificate_quantity.reload.account).to eq(other_organization.default_account)
+      it 'creates a transaction job to accept the transfer' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('accept_transfer')
       end
     end
 
@@ -334,12 +339,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(response.code).to eq('401')
       end
 
-      it 'leaves the certificate status as intransit' do
-        expect(certificate_quantity.reload.status).to eq('intransit')
-      end
-
-      it 'leaves the to_organization' do
-        expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      it 'does not create a transaction job' do
+        expect(enqueued_jobs.size).to eq 0
       end
     end
   end
@@ -350,8 +351,8 @@ RSpec.describe 'CertificateQuantities', type: :request do
         put "/certificate_quantities/#{certificate_quantity.id}/split?quantity=99", headers: headers
       end
 
-      it 'returns a 200 status' do
-        expect(response.code).to eq('200')
+      it 'returns a 202 status' do
+        expect(response.code).to eq('202')
       end
 
       it 'responds with the updated certificate status' do
@@ -359,20 +360,12 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(json).to eq(certificate_quantity_json(certificate_quantity.reload))
       end
 
-      it 'modifies the certificate account to change to passed in account' do
-        expect(certificate_quantity.reload.quantity).to eq(99)
+      it 'creates a transaction job' do
+        expect(enqueued_jobs.size).to eq 1
       end
 
-      it 'creates a new certificate with the left over quantity' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:quantity)).to match_array([ 1, 99 ])
-      end
-
-      it 'creates a new certificate with the same account' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:account)).to match_array([ account, account ])
-      end
-
-      it 'creates a new certificate with an active status' do
-        expect(certificate_quantity.certificate.reload.certificate_quantities.map(&:status)).to match_array([ 'active', 'active' ])
+      it 'creates a transaction job to split the certificate' do
+        expect(enqueued_jobs.first["arguments"].first["action"]).to eq('split')
       end
     end
 
