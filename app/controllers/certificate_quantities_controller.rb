@@ -60,7 +60,7 @@ class CertificateQuantitiesController < ApplicationController
       TransactionJob.perform_later(@transaction, {id: params[:id], organization_id: organization_id})
     end
 
-    render "show"
+    render "show", status: :accepted
   end
 
   def cancel_transfer
@@ -73,7 +73,7 @@ class CertificateQuantitiesController < ApplicationController
 
     TransactionJob.perform_later(@transaction, id: params[:id])
 
-    render "show"
+    render "show", status: :accepted
   end
 
   def accept_transfer
@@ -84,9 +84,10 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    TransactionJob.perform_later(@transaction, {id: params[:id], account: current_user.organization.default_account_id})
+    account_id = current_user.organization.default_account_id
+    TransactionJob.perform_later(@transaction, {id: params[:id], account_id: account_id})
 
-    render "show"
+    render "show", status: :accepted
   end
 
   def split
@@ -111,6 +112,6 @@ class CertificateQuantitiesController < ApplicationController
 
     TransactionJob.perform_later(@transaction, {id: params[:id], quantity: params[:quantity].to_i})
     
-    render "show"
+    render "show", status: :accepted
   end
 end

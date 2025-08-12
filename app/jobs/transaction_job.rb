@@ -3,9 +3,9 @@ class TransactionJob < ApplicationJob
     change = Transaction.new(transaction)
     change.record_id = data[:id]
 
-    begin
+    #begin
+      # Routing for any resource with a job queue
       case change.resource
-        # Routing for any resource with a job queue
         when 'certificate_quantities'
           certificate_quantity = CertificateQuantity.find(data[:id])
           mod_states = case change.action
@@ -28,8 +28,8 @@ class TransactionJob < ApplicationJob
         else raise("Resource not recognized")
       end
       change.save_as_success
-    rescue
-      change.save_as_error
-    end
+    #rescue
+    #  change.save_as_error
+    #end
   end
 end

@@ -17,8 +17,8 @@ class CertificateQuantity < ApplicationRecord
   end
 
   def transfer(account_id, organization_id)
-    if account_id then mod_state({account: Account.find(account_id)})
-    elsif organization_id then mod_state({status: "intransit", to_organization: Organization.find(organization_id)})
+    if account_id then mod_state({account_id: account_id})
+    elsif organization_id then mod_state({status: "intransit", to_organization_id: organization_id})
     end
   end
 
