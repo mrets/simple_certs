@@ -21,9 +21,8 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.retire
-
-    render "show"
+    TransactionJob.perform_later(@transaction, id: params[:id])
+    render "show", status: :accepted
   end
 
   def transfer
@@ -56,11 +55,9 @@ class CertificateQuantitiesController < ApplicationController
     end
 
     if account_id
-      account = Account.find(account_id)
-      @certificate_quantity.update(account: account)
+      TransactionJob.perform_later(@transaction, {id: params[:id], account_id: account_id})
     elsif organization_id
-      organization = Organization.find(organization_id)
-      @certificate_quantity.update(status: "intransit", to_organization: organization)
+      TransactionJob.perform_later(@transaction, {id: params[:id], organization_id: organization_id})
     end
 
     render "show"
@@ -74,7 +71,7 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.update(status: "active", to_organization: nil)
+    TransactionJob.perform_later(@transaction, id: params[:id])
 
     render "show"
   end
@@ -87,7 +84,7 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.update(status: "active", to_organization: nil, account: current_user.organization.default_account)
+    TransactionJob.perform_later(@transaction, {id: params[:id], account: current_user.organization.default_account_id})
 
     render "show"
   end
@@ -96,6 +93,8 @@ class CertificateQuantitiesController < ApplicationController
     @certificate_quantity = CertificateQuantity.find(params[:id])
     authorize @certificate_quantity
 
+    # Future improvement: These validations should happen before the job.
+    # That would allow them to validate based on the current state, not the prior one.
     unless @certificate_quantity.status == "active"
       return head :unprocessable_entity
     end
@@ -110,9 +109,8 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.split(params[:quantity].to_i)
-
-    @certificate_quantity.reload
+    TransactionJob.perform_later(@transaction, {id: params[:id], quantity: params[:quantity].to_i})
+    
     render "show"
   end
 end
