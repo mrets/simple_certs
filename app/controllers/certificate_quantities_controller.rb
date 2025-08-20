@@ -21,7 +21,7 @@ class CertificateQuantitiesController < ApplicationController
       return head :unprocessable_entity
     end
 
-    @certificate_quantity.retire
+    @certificate_quantity.retired!
 
     render "show"
   end
