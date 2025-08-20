@@ -6,6 +6,8 @@ class CertificateQuantity < ApplicationRecord
   enum :status, %w[active intransit retired].index_by(&:itself)
   after_update :set_status_changed_at, if: -> { saved_change_to_status? }
 
+  scope :stale_transfers, -> { intransit.where(status_changed_at: ..24.hours.ago) }
+
   def split(quantity)
     self.class.create(certificate: certificate, account: account, quantity: self.quantity - quantity, status: "active")
     update(quantity: quantity)
