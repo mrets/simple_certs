@@ -6,9 +6,7 @@ RSpec.describe StaleTransfersFinderJob, type: :job do
 
   describe "#perform_later" do
     it "queues job" do
-      expect {
-        described_class.perform_later
-      }.to have_enqueued_job
+      expect { described_class.perform_later }.to have_enqueued_job
     end
 
     it "queues a CancelStaleTranferJob for each record found" do
