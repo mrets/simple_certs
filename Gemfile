@@ -37,9 +37,14 @@ gem "pundit"
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"
 
+# Use Sidekiq to run jobs on a schedule
+gem "sidekiq"
+gem "sidekiq-cron"
+
 group :test do
   gem "rspec-rails"
   gem "factory_bot_rails"
+  gem "shoulda-matchers", "6.5.0"
 end
 
 group :development, :test do
