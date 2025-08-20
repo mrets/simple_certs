@@ -40,6 +40,7 @@ gem "pundit"
 group :test do
   gem "rspec-rails"
   gem "factory_bot_rails"
+  gem "shoulda-matchers", "6.5.0"
 end
 
 group :development, :test do
