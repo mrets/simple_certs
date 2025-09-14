@@ -157,6 +157,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
       it 'modifies the to_organization' do
         expect(certificate_quantity.reload.to_organization).to eq(other_organization)
       end
+
+      it 'sets the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_within(1.minute).of(Time.zone.now)
+      end
     end
 
     context "when passing invalid parameters" do
@@ -204,7 +208,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
   context 'cancel_transfer' do
     context "when cancelling a transfer that is associated with the user's organization" do
       before do
-        certificate_quantity.update(status: 'intransit')
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization, transfer_initiated_at: 1.hour.ago)
         put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
       end
 
@@ -224,6 +228,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
       it 'clears out the to_organization' do
         expect(certificate_quantity.reload.to_organization).to be_nil
       end
+
+      it 'clears out the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_nil
+      end
     end
 
     context 'when the status is not intransit' do
@@ -236,7 +244,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
     context "when canceling a transfer of a certificate to another organization that is associated with the user's organization" do
       before do
-        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization, transfer_initiated_at: 1.hour.ago)
         put "/certificate_quantities/#{certificate_quantity.id}/cancel_transfer", headers: headers
       end
 
@@ -256,11 +264,15 @@ RSpec.describe 'CertificateQuantities', type: :request do
       it 'resets the to_organization' do
         expect(certificate_quantity.reload.to_organization).to be_nil
       end
+
+      it 'resets the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_nil
+      end
     end
 
     context "when transferring a certificate that is not associated with the user's organization" do
       before do
-        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization, transfer_initiated_at: 1.hour.ago)
         put "/certificate_quantities/#{other_certificate_quantity.id}/transfer", headers: headers
       end
 
@@ -274,6 +286,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
       it 'leaves the to_organization' do
         expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+
+      it 'leaves the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_present
       end
     end
   end
@@ -306,6 +322,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
         expect(certificate_quantity.reload.to_organization).to be_nil
       end
 
+      it 'clears out the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_nil
+      end
+
       it 'sets the account to the organizations default account' do
         expect(certificate_quantity.reload.account).to eq(other_organization.default_account)
       end
@@ -326,7 +346,7 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
     context "when transferring a certificate that is not associated with the user's organization" do
       before do
-        certificate_quantity.update(status: 'intransit', to_organization: other_organization)
+        certificate_quantity.update(status: 'intransit', to_organization: other_organization, transfer_initiated_at: 1.hour.ago)
         put "/certificate_quantities/#{other_certificate_quantity.id}/transfer", headers: headers
       end
 
@@ -340,6 +360,10 @@ RSpec.describe 'CertificateQuantities', type: :request do
 
       it 'leaves the to_organization' do
         expect(certificate_quantity.reload.to_organization).to eq(other_organization)
+      end
+
+      it 'leaves the transfer_initiated_at timestamp' do
+        expect(certificate_quantity.reload.transfer_initiated_at).to be_present
       end
     end
   end
